@@ -1,29 +1,22 @@
 package com.docdoc.oauth2.service;
 
-import com.docdoc.oauth2.configuration.RoleType;
-import com.docdoc.oauth2.model.dto.AuthDataDTO;
-import com.docdoc.oauth2.model.dto.UserResponseDTO;
-import com.nimbusds.jose.*;
-import com.nimbusds.jose.crypto.DirectEncrypter;
-import com.nimbusds.jose.jwk.source.ImmutableSecret;
-import com.nimbusds.jose.jwk.source.JWKSource;
-import com.nimbusds.jose.proc.BadJOSEException;
-import com.nimbusds.jose.proc.JWEDecryptionKeySelector;
-import com.nimbusds.jose.proc.JWEKeySelector;
-import com.nimbusds.jose.proc.SimpleSecurityContext;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
-import com.nimbusds.jwt.proc.DefaultJWTProcessor;
+import java.text.ParseException;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
+
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.text.ParseException;
-import java.util.Date;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
+import com.nimbusds.jose.*;
+import com.nimbusds.jose.crypto.DirectEncrypter;
+import com.nimbusds.jose.proc.BadJOSEException;
+import com.nimbusds.jose.proc.SimpleSecurityContext;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
+
+import com.docdoc.oauth2.configuration.RoleType;
+import com.docdoc.oauth2.model.dto.UserResponseDTO;
 
 @Service
 public class JWTHandlerService {
@@ -75,6 +68,11 @@ public class JWTHandlerService {
         return new DirectEncrypter(secretKey.getBytes());
     }
 
+    /**
+     * @param jweObject
+     * @throws JOSEException
+     */
+
     private void encrypt(JWEObject jweObject) throws JOSEException {
         jweObject.encrypt(encrypter());
     }
@@ -89,7 +87,8 @@ public class JWTHandlerService {
                 (ConfigurableJWTProcessor<SimpleSecurityContext>) webApplicationContext.getBean("JWTProcessor");
         return jwtProcessor.process(token, null);
     }
-    public boolean isTokenValid(String token, String login,RoleType roleType) throws BadJOSEException, ParseException, JOSEException {
+
+    public boolean isTokenValid(String token, String login, RoleType roleType) throws BadJOSEException, ParseException, JOSEException {
         JWTClaimsSet claims = extractClaims(token);
         String subject = claims.getSubject();
         Date expiration = claims.getExpirationTime();
@@ -108,7 +107,6 @@ public class JWTHandlerService {
         JWTClaimsSet claims = extractClaims(token);
         return claims.getSubject();
     }
-
 
 
 }

@@ -1,16 +1,16 @@
 package com.docdoc.oauth2.controller;
 
-import com.docdoc.oauth2.exception.OAuthException;
-import com.docdoc.oauth2.model.dto.AuthDataDTO;
-import com.docdoc.oauth2.service.OAuth2Service;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Optional;
+import com.docdoc.oauth2.exception.OAuthException;
+import com.docdoc.oauth2.model.dto.AuthDataDTO;
+import com.docdoc.oauth2.service.OAuth2Service;
 
 @RestController
 @RequestMapping("/oAuth2")
@@ -22,7 +22,7 @@ public class OAuth2Controller {
         this.oAuth2Service = oAuth2Service;
     }
 
-    @PostMapping
+    @PostMapping("/authorize")
     public ResponseEntity<String> getOAuth2(@RequestBody AuthDataDTO authDataDTO) {
         Optional.of(authDataDTO).filter(data -> data.login() != null)
                 .filter(data -> data.password() != null)
@@ -34,7 +34,7 @@ public class OAuth2Controller {
             throw new ResponseStatusException(exception.getHttpStatus(), exception.getMessage());
         }
     }
-    @PostMapping
+    @PostMapping("/token/validate")
     public ResponseEntity<Void> validateToken (@RequestParam String token) {
         Optional.of(token).filter(data -> !data.isEmpty())
                 .filter(data -> !data.isBlank())

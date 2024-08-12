@@ -1,11 +1,13 @@
 package com.docdoc.oauth2.model.db;
 
-import com.docdoc.oauth2.configuration.RoleType;
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import com.docdoc.oauth2.configuration.RoleType;
 
 @Entity
 @Getter
@@ -14,6 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OAuthToken {
+    @Id
     @GeneratedValue
     private long id;
     private String login;
