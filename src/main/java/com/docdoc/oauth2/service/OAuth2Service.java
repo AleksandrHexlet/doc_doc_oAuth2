@@ -46,9 +46,9 @@ public class OAuth2Service {
                                 .findByLoginAndExpiredAtGreaterThanAndEnableTrue(response.getBody().getLogin(),
                                         LocalDateTime.now()).stream().peek(user -> user.setEnable(false))
                                 .toList();
-//                        if (users.iterator().hasNext()) {
+                        if (users.iterator().hasNext()) {
                             oAuthRepository.saveAll(users);
-//                        }
+                        }
                         String token = jwtHandlerService.generateToken(response.getBody());
                         OAuthToken tokenNew = OAuthToken.builder().token(token).login(response.getBody().getLogin()).role(RoleType.USER)
                                 .createdAt(date).expiredAt(date.plusDays(lifetimeJWTtoken)).enable(true)

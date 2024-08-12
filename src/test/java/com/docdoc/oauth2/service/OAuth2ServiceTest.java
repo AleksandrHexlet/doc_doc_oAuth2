@@ -39,7 +39,8 @@ class OAuth2ServiceTest {
     @Mock
     OAuthRepository oAuthRepository;
     AuthDataDTO authDataDTO = new AuthDataDTO("login", "password", RoleType.USER);
-    UserResponseDTO userResponseDTO = new UserResponseDTO();
+    UserResponseDTO userResponseDTO = UserResponseDTO.builder().userId("1").login("login").city("city").name("name").areaName("areaName")
+            .lastName("lastName").metroStationName("metroStationName").role(RoleType.USER).build();
     OAuthToken oAuthToken = new OAuthToken(123L, "login", RoleType.USER, "token",
             LocalDateTime.now(), LocalDateTime.now().plusDays(10), true, "userID");
     List<OAuthToken> tokenList = List.of(oAuthToken, oAuthToken);
@@ -109,25 +110,22 @@ class OAuth2ServiceTest {
 //            [com.docdoc.oauth2.model.db.OAuthToken@488b50ec]
 //            );
     void GetAuthorize_ReturnsValidToken_NotFirstAuthorize() {
-
         LocalDateTime dateTime = LocalDateTime.now();
         when(userRequest.getOAuth2(authDataDTO))
                 .thenReturn(new ResponseEntity<>(userResponseDTO, HttpStatus.OK));
         when(oAuthRepository
-                .findByLoginAndExpiredAtGreaterThanAndEnableTrue(authDataDTO.login(),
-                        dateTime))
+                .findByLoginAndExpiredAtGreaterThanAndEnableTrue(eq(userResponseDTO.getLogin()),
+                        any()))
                 .thenReturn(tokenList);
         when(oAuthRepository.saveAll(tokenList))
                 .thenReturn(tokenList);
-//        verify(oAuthRepository, times(1))
-//                .saveAll(tokenList);
-
         when(jwtHandlerService.generateToken(userResponseDTO))
                 .thenReturn("generateToken");
         when(oAuthRepository.save(any())).thenReturn(oAuthToken);
         String tokenNew = oAuth2Service.getAuthorize(authDataDTO);
+        verify(oAuthRepository, times(1))
+                .saveAll(any());
         Assertions.assertEquals(oAuthToken.getToken(), tokenNew);
-
     }
 
     @SneakyThrows
@@ -140,30 +138,14 @@ class OAuth2ServiceTest {
     }
     @SneakyThrows
     @Test
-//    Wanted but not invoked:
-//            jwtHandlerService.generateToken(
-//    com.docdoc.oauth2.model.dto.UserResponseDTO@1869f114
-//            );
-//-> at com.docdoc.oauth2.service.JWTHandlerService.generateToken(JWTHandlerService.java:36)
-//    Actually, there were zero interactions with this mock.
-    
     void GetAuthorize_ReturnsRunTimeException_JwtHandlerServiceNotParseToken() {
         ResponseEntity<UserResponseDTO> userResponse = new ResponseEntity<>(userResponseDTO, HttpStatus.OK);
         when(userRequest.getOAuth2(any()))
                 .thenReturn(userResponse);
         when(jwtHandlerService.generateToken(any()))
                 .thenThrow(new JOSEException());
-        verify(jwtHandlerService,times(1))
-                .generateToken(userResponseDTO);
         Assertions.assertThrows(RuntimeException.class, () -> oAuth2Service.getAuthorize(any()));
-        Assertions.assertThrows(JOSEException.class, () -> jwtHandlerService.generateToken(userResponseDTO));
-
+        verify(oAuthRepository,times(0))
+                .save(any());
     }
 }
-
-// 1) Тест при повторной авторизации oAuthRepository.saveAll(users); должен быть verify(1)
-// и в findByLoginAndExpiredAtGreaterThanAndEnableTrue
-// передай значение из authDataDTO
-// 2) userRequest вернет ResponseEntitty c HttpStatus.NOT_FOUND
-// 3) filter(response -> response.getStatusCode() != HttpStatus.NOT_FOUND && response.getBody() != null)  return OAuthException::userNotFound
-//    4)when jwtHandlerService.generateToken(response.getBody()) ---> getAuthorize throws RunTimeException

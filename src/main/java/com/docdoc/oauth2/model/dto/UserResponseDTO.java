@@ -1,9 +1,14 @@
 package com.docdoc.oauth2.model.dto;
 
-import com.docdoc.oauth2.configuration.RoleType;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
+
+import com.docdoc.oauth2.configuration.RoleType;
 
 @Getter
+@Setter
+@Builder
 public class UserResponseDTO {
     private String login;
     private String name;
