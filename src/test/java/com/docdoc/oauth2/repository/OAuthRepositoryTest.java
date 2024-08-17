@@ -38,6 +38,10 @@ class OAuthRepositoryTest {
         registry.add("spring.datasource.url", postgreSQLContainer::getJdbcUrl);
         registry.add("spring.datasource.username", postgreSQLContainer::getUsername);
         registry.add("spring.datasource.password", postgreSQLContainer::getPassword);
+
+        System.out.println(" postgreSQLContainer::getJdbcUrl :: " +  postgreSQLContainer.getJdbcUrl());
+        System.out.println(" postgreSQLContainer::getUsername :: " +  postgreSQLContainer.getUsername());
+        System.out.println(" postgreSQLContainer::getPassword :: " +  postgreSQLContainer.getPassword());
     }
 
     @BeforeEach
@@ -71,7 +75,11 @@ class OAuthRepositoryTest {
     void findByLoginAndExpiredAtGreaterThanAndEnableTrue() {
         List<Long> tokenList = oAuthRepository.findByLoginAndExpiredAtGreaterThanAndEnableTrue("login",
                 LocalDateTime.now()).stream().map(oAuthToken -> oAuthToken.getId()).toList();
+        System.out.println("tokenList :: " + tokenList);
         Assertions.assertEquals(tokenList.size(), 2);
-        assertThatList(tokenList).isIn(1l, 3l);
+        assertThatList(tokenList).isEqualTo(List.of(1l, 3l));
     }
+
+
+
 }

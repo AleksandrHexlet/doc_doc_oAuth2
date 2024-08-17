@@ -24,9 +24,10 @@ public class OAuth2Controller {
 
     @PostMapping("/authorize")
     public ResponseEntity<String> getOAuth2(@RequestBody AuthDataDTO authDataDTO) {
-        Optional.of(authDataDTO).filter(data -> data.login() != null)
-                .filter(data -> data.password() != null)
+        Optional.of(authDataDTO).filter(data -> data.login() != null && !data.login().isEmpty() && !data.login().isBlank())
+                .filter(data -> data.password() != null && !data.password().isEmpty() && !data.password().isBlank())
                 .filter(data -> data.role()!= null)
+
                 .orElseThrow(()-> new ResponseStatusException(HttpStatus.BAD_REQUEST));
         try {
             return new ResponseEntity(oAuth2Service.getAuthorize(authDataDTO),HttpStatus.OK);
@@ -44,6 +45,9 @@ public class OAuth2Controller {
             return new ResponseEntity<>(HttpStatus.OK);
         } catch(OAuthException exception){
             throw new ResponseStatusException(exception.getHttpStatus(), exception.getMessage());
+        } catch (RuntimeException exception){
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    exception.getMessage());
         }
 
     }
